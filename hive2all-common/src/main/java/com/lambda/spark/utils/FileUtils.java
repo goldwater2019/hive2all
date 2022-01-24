@@ -1,6 +1,7 @@
-package com.lambda.spark.quickstart.utils;
+package com.lambda.spark.utils;
 
 import java.io.File;
+import java.text.MessageFormat;
 
 /**
  * @Author: zhangxinsen
@@ -15,8 +16,10 @@ public class FileUtils {
         if (!file.exists()) {
             createDir(dirname);
         }
+        System.out.println("dir: " + dirname + " " + (file.exists() ? "exists" : " not exists"));
+        file = new File(dirname);
         if (!file.isDirectory()) {
-            throw new Exception("only support dir");
+            throw new Exception("only support dir, given dir:" + dirname);
         }
         File[] files = file.listFiles();
         for (File file1 : files) {
@@ -42,6 +45,8 @@ public class FileUtils {
         if (file.exists()) {
             return;
         }
-        file.mkdir();
+        // file.mkdir();
+        Runtime runtime = Runtime.getRuntime();
+        runtime.exec(MessageFormat.format("mkdir {0}", dirname));
     }
 }

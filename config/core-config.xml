@@ -1,0 +1,18 @@
+<configuration>
+    <property>
+        <name>fs.defaultFS</name>
+        <value>hdfs://node1:8700/</value>
+    </property>
+    <!-- <property>
+             <name>ha.zookeeper.quorum</name>
+      <value>hadoop0:2181</value>
+    </property> -->
+    <property>
+        <name>hadoop.proxyuser.lambda.hosts</name>
+        <value>*</value>
+    </property>
+    <property>
+        <name>hadoop.proxyuser.lambda.groups</name>
+        <value>*</value>
+    </property>
+</configuration>

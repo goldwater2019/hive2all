@@ -1,0 +1,28 @@
+<configuration>
+    <property>
+        <name>data.dir</name>
+        <value>file:///opt/modules/hadoop/hadoop-2.7.4/data</value>
+        <!-- <value>file:///Users/zhangxinsen/opt/hadoop/hadoop-2.7.4/data</value> -->
+    </property>
+    <property>
+        <name>dfs.datanode.data.dir</name>
+        <value>${data.dir}/datanode</value>
+    </property>
+    <property>
+        <name>dfs.namenode.name.dir</name>
+        <value>${data.dir}/namenode</value>
+    </property>
+    <property>
+        <name>dfs.namenode.http-address</name>
+        <value>node1:50070</value>
+    </property>
+    <property>
+        <name>dfs.namenode.secondary.http-address</name>
+        <value>node1:50090</value>
+    </property>
+    <property>
+        <name>dfs.replication</name>
+        <!-- <value>1</value> -->
+        <value>3</value>
+    </property>
+</configuration>

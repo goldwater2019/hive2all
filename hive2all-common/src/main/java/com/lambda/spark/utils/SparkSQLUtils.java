@@ -1,6 +1,5 @@
-package com.lambda.spark.quickstart.utils;
+package com.lambda.spark.utils;
 
-import groovy.sql.DataSet;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.api.java.function.Function;
