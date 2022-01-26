@@ -1,15 +1,11 @@
 package com.lambda.spark;
 
-import com.lambda.spark.utils.FileUtils;
 import com.lambda.spark.utils.SparkSQLUtils;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.function.FilterFunction;
 import org.apache.spark.api.java.function.MapFunction;
-import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.Encoders;
-import org.apache.spark.sql.Row;
-import org.apache.spark.sql.SparkSession;
+import org.apache.spark.sql.*;
 import org.apache.spark.sql.types.StructField;
 import scala.Tuple2;
 import scala.collection.Iterator;
@@ -21,6 +17,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import static com.lambda.spark.utils.ConfigUtils.getOutputDir;
 import static com.lambda.spark.utils.XMLUtils.getConfigurationInDir;
 
 
@@ -44,8 +41,11 @@ public class File2Hive {
     }
 
     public static void loadAndInsertIntoHive(SparkSession spark, String taskTableName, Map<String, String> configuration) {
-        String ddlPath = MessageFormat.format("output/{0}/ddl", taskTableName);
-        String dataPath = MessageFormat.format("output/{0}/json", taskTableName);
+
+        String outputDir = getOutputDir(configuration);
+
+        String ddlPath = MessageFormat.format("file://{0}/{1}/ddl", outputDir, taskTableName);
+        String dataPath = MessageFormat.format("file://{0}/{1}/json", outputDir, taskTableName);
 
         Dataset<Row> text = spark.read().text(ddlPath);
         Dataset<String> stringDataset = text.map(new MapFunction<Row, String>() {
@@ -217,16 +217,16 @@ public class File2Hive {
         }
 
         json.show();
-//        if (isPartitionEnable) {
-//            String[] partitionColumns = partitionStrList.split(",");
-//            json.write().mode(SaveMode.Overwrite).format("hive").partitionBy(partitionColumns)
-//                    .saveAsTable(MessageFormat.format("`{0}`.`{1}`",
-//                            dbName, tableName));
-//        } else {
-//            json.write().mode(SaveMode.Overwrite).format("hive")
-//                    .saveAsTable(MessageFormat.format("`{0}`.`{1}`",
-//                            dbName, tableName));
-//        }
+        if (isPartitionEnable) {
+            String[] partitionColumns = partitionStrList.split(",");
+            json.write().mode(SaveMode.Overwrite).format("hive").partitionBy(partitionColumns)
+                    .saveAsTable(MessageFormat.format("`{0}`.`{1}`",
+                            dbName, tableName));
+        } else {
+            json.write().mode(SaveMode.Overwrite).format("hive")
+                    .saveAsTable(MessageFormat.format("`{0}`.`{1}`",
+                            dbName, tableName));
+        }
     }
 
     public static void main(String[] args) throws Exception {
@@ -254,30 +254,6 @@ public class File2Hive {
             }
         }
 
-        String outputDir = null;
-        String s = configuration.get("output.dir");
-        if (s == null) {
-            outputDir = "output";
-        } else {
-            outputDir = s;
-        }
-
-        boolean isLimitEnable = false;
-        if (configuration.get("limit.enable") == null || !configuration.get("limit.enable").equals("true")) {
-            isLimitEnable = false;
-        } else {
-            isLimitEnable = true;
-        }
-
-        int limitNum = 100;
-        if (configuration.get("limit.num") == null) {
-            limitNum = 100;
-        } else {
-            limitNum = Integer.valueOf(configuration.get("limit.num"));
-        }
-
-
-        FileUtils.createDir(outputDir);
 
         // $example on:spark_hive$
         // warehouseLocation points to the default location for managed databases and tables
@@ -295,6 +271,14 @@ public class File2Hive {
 //        describeTable(spark, "output/edw_cdm.dwd_fact_cas_login_log_delta_1d/json", "dwd_fact_cas_login_log_delta_1d");
 //        describeTable(spark, "output/edw_cdm.dwd_fact_cs_fixduty/json", "dwd_fact_cs_fixduty");
 //        describeTable(spark, "output/edw_cdm.dwd_fact_cs_mistake/json", "dwd_fact_cs_mistake");
+
+        System.out.println("切换库");
+        spark.sql("use edw_cdm;");
+        // System.out.println("删除表");
+        // spark.sql("select count(1) from edw_cdm.dws_operation_load_rate_by_road").show();
+        // spark.sql("drop table if exists edw_cdm.dws_operation_load_rate_by_road").show();
+        System.out.println("查看表");
+        spark.sql("show tables;").show();
 
         for (String taskTableName : tableNameList) {
             loadAndInsertIntoHive(spark, taskTableName, configuration);

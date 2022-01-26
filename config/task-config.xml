@@ -1,7 +1,7 @@
 <configuration>
     <property>
         <name>output.dir</name>
-        <value>file:///Users/zhangxinsen/workspace/hive2all/output</value>
+        <value>/Users/zhangxinsen/workspace/hive2all/output</value>
     </property>
 
     <property>
@@ -11,71 +11,69 @@
 
     <property>
         <name>dfs.host.replace.new</name>
-        <value>hdfs://node1:8700</value>
+        <value>hdfs://hadoop0:8200</value>
     </property>
 
-    <property>
-        <name>table-1</name>
-        <value>edw_cdm.dim_dm_pb_bizop_org_brnch</value>
-    </property>
+<!--    <property>-->
+<!--        <name>table-1</name>-->
+<!--        <value>edw_cdm.dim_dm_pb_bizop_org_brnch</value>-->
+<!--    </property>-->
 
-    <property>
-        <name>table-2</name>
-        <value>edw_cdm.dim_hs_basic_dict</value>
-    </property>
+<!--    <property>-->
+<!--        <name>table-2</name>-->
+<!--        <value>edw_cdm.dim_hs_basic_dict</value>-->
+<!--    </property>-->
 
 
-    <property>
-        <name>table-3</name>
-        <value>edw_cdm.dim_hs_basic_site</value>
-    </property>
+<!--    <property>-->
+<!--        <name>table-3</name>-->
+<!--        <value>edw_cdm.dim_hs_basic_site</value>-->
+<!--    </property>-->
 
-    <property>
-        <name>table-4</name>
-        <value>edw_cdm.dim_tms_ane_lw_type</value>
-    </property>
+<!--    <property>-->
+<!--        <name>table-4</name>-->
+<!--        <value>edw_cdm.dim_tms_ane_lw_type</value>-->
+<!--    </property>-->
 
-    <property>
-        <name>table-5</name>
-        <value>edw_cdm.dim_tms_equipment_group</value>
-    </property>
+<!--    <property>-->
+<!--        <name>table-5</name>-->
+<!--        <value>edw_cdm.dim_tms_equipment_group</value>-->
+<!--    </property>-->
 
-    <property>
-        <name>table-6</name>
-        <value>edw_cdm.dwd_fact_hs_opt_ewb</value>
-    </property>
+<!--    <property>-->
+<!--        <name>table-6</name>-->
+<!--        <value>edw_cdm.dwd_fact_hs_opt_ewb</value>-->
+<!--    </property>-->
 
-    <property>
-        <name>table-7</name>
-        <value>edw_cdm.dwd_fact_hs_opt_ewb_detail</value>
-    </property>
+<!--    <property>-->
+<!--        <name>table-7</name>-->
+<!--        <value>edw_cdm.dwd_fact_hs_opt_ewb_detail</value>-->
+<!--    </property>-->
 
-    <property>
-        <name>table-8</name>
-        <value>edw_cdm.dwd_fact_lb_hs_ewbs_list_detail</value>
-    </property>
+<!--    <property>-->
+<!--        <name>table-8</name>-->
+<!--        <value>edw_cdm.dwd_fact_lb_hs_ewbs_list_detail</value>-->
+<!--    </property>-->
 
-    <property>
-        <name>table-9</name>
-        <value>edw_cdm.dwd_fact_lb_hs_ewbs_list_no</value>
-        <!--        <condition-where-1>dt=20200212</condition-where-1>-->
-        <!--        <condition-where-2>dt=20200216</condition-where-2>-->
-    </property>
-    <!--    -->
-    <property>
-        <name>table-10</name>
-        <value>edw_cdm.dwd_fact_tms_location</value>
-    </property>
+<!--    <property>-->
+<!--        <name>table-9</name>-->
+<!--        <value>edw_cdm.dwd_fact_lb_hs_ewbs_list_no</value>-->
+<!--    </property>-->
 
-    <property>
-        <name>table-11</name>
-        <value>edw_cdm.dwd_fact_tms_shipment</value>
-    </property>
+<!--    <property>-->
+<!--        <name>table-10</name>-->
+<!--        <value>edw_cdm.dwd_fact_tms_location</value>-->
+<!--    </property>-->
 
-    <property>
-        <name>table-12</name>
-        <value>edw_cdm.dwd_fact_tms_shipment_stop</value>
-    </property>
+<!--    <property>-->
+<!--        <name>table-11</name>-->
+<!--        <value>edw_cdm.dwd_fact_tms_shipment</value>-->
+<!--    </property>-->
+
+<!--    <property>-->
+<!--        <name>table-12</name>-->
+<!--        <value>edw_cdm.dwd_fact_tms_shipment_stop</value>-->
+<!--    </property>-->
 
     <property>
         <name>table-13</name>
@@ -109,6 +107,11 @@
     <property>
         <name>compression.format</name>
         <value>none</value>
+    </property>
+
+    <property>
+        <name>sql.file</name>
+        <value>/Users/zhangxinsen/workspace/hive2all/notebook/sql.xml</value>
     </property>
 </configuration>
 

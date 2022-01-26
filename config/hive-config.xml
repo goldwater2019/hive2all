@@ -1,7 +1,7 @@
 <configuration>
     <property>
         <name>javax.jdo.option.ConnectionURL</name>
-        <value>jdbc:mysql://118.195.176.222:3306/metastore2?createDatabaseIfNotExist=true&amp;useUnicode=true&amp;characterEncoding=UTF-8&amp;serverTimezone=Asia/Shanghai&amp;useSSL=false</value>
+        <value>jdbc:mysql://118.195.176.222:3306/metastore?createDatabaseIfNotExist=true&amp;useUnicode=true&amp;characterEncoding=UTF-8&amp;serverTimezone=Asia/Shanghai&amp;useSSL=false</value>
     </property>
     <property>
         <name>javax.jdo.option.ConnectionDriverName</name>
@@ -17,7 +17,7 @@
     </property>
     <property>
         <name>hive.metastore.warehouse.dir</name>
-        <value>hdfs://node1:8700//user/hive/warehouse</value>
+        <value>hdfs://hadoop0:8200//user/hive/warehouse</value>
     </property>
 
     <property>
@@ -27,6 +27,105 @@
 
     <property>
         <name>hive.metastore.uris</name>
-        <value>thrift://node1:9083</value>
+        <value>thrift://hadoop0:9083</value>
     </property>
+
+    <property>
+        <name>hive.cli.print.current.db</name>
+        <value>true</value>
+    </property>
+
+    <property>
+        <name>hive.cli.print.header</name>
+        <value>true</value>
+    </property>
+    <property>
+        <name>hive.zookeeper.quorum</name>
+        <value>hadoop0</value>
+    </property>
+
+    <property>
+        <name>hive.support.concurrency</name>
+        <value>true</value>
+    </property>
+
+    <property>
+        <name>hive.enforce.bucketing</name>
+        <value>true</value>
+    </property>
+
+    <property>
+        <name>hive.exec.dynamic.partition.mode</name>
+        <value>nonstrict</value>
+    </property>
+
+    <property>
+        <name>hive.txn.manager</name>
+        <value>org.apache.hadoop.hive.ql.lockmgr.DbTxnManager</value>
+    </property>
+
+    <property>
+        <name>hive.compactor.initiator.on</name>
+        <value>true</value>
+    </property>
+
+    <property>
+        <name>hive.compactor.worker.threads</name>
+        <value>1</value>
+    </property>
+    <property>
+        <name>hive.auto.convert.join.noconditionaltask.size</name>
+        <value>10000000</value>
+    </property>
+
+    <property>
+        <name>hive.exec.max.dynamic.partitions</name>
+        <value>10000</value>
+    </property>
+    <property>
+        <name>hive.exec.max.dynamic.partitions.pernode</name>
+        <value>10000</value>
+    </property>
+
+    <!--hive on spark or spark on yarn -->
+    <!-- <property>
+        <name>hive.execution.engine</name>
+        <value>spark</value>
+    </property>
+    <property>
+        <name>hive.enable.spark.execution.engine</name>
+        <value>true</value>
+    </property>
+    <property>
+        <name>spark.home</name>
+        <value>/touchspring/servers/spark</value>
+    </property>
+    <property>
+        <name>spark.eventLog.enabled</name>
+        <value>true</value>
+    </property>
+    <property>
+        <name>spark.eventLog.dir</name>
+        <value>hdfs://mycluster/spark-log</value>
+    </property>
+    <property>
+        <name>spark.serializer</name>
+        <value>org.apache.spark.serializer.KryoSerializer</value>
+    </property>
+    <property>
+        <name>spark.executor.memeory</name>
+        <value>1g</value>
+    </property>
+    <property>
+        <name>spark.driver.memeory</name>
+        <value>1g</value>
+    </property>
+    <property>
+        <name>spark.executor.extraJavaOptions</name>
+        <value>-XX:+PrintGCDetails -Dkey=value -Dnumbers="one two three"</value>
+    </property>
+    <property>
+        <name>spark.yarn.jar</name>
+        <value>hdfs://mycluster/spark-assembly-1.6.0-hadoop2.7.2.jar</value>
+    </property> -->
 </configuration>

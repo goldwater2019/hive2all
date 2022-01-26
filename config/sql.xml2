@@ -1,0 +1,759 @@
+<configuration>
+
+    <property>
+        <sql.name>location</sql.name>
+        <sql.value>
+            select
+            location_gid,
+            location_name
+            from
+            edw_cdm.dwd_fact_tms_location
+            where
+            end_time = '9999-12-31'
+        </sql.value>
+        <sql.enable>true</sql.enable>
+        <sql.description>与运输经停表关联补充途径站点名称</sql.description>
+    </property>
+
+    <property>
+        <sql.name>shipment_stop_tmp</sql.name>
+        <sql.value>
+            select
+            shipment_gid,
+            stop_num,
+            location_gid,
+            planned_departure,
+            actual_departure
+            from
+            edw_cdm.dwd_fact_tms_shipment_stop
+            where
+            end_time = '9999-12-31'
+        </sql.value>
+        <sql.enable>true</sql.enable>
+        <sql.description>交接单表，与运输主表关联后提供与运单表关联运单号</sql.description>
+    </property>
+
+
+    <property>
+        <sql.name>car_tmp</sql.name>
+        <sql.value>
+            select '9.6米' as car_type, 12 as capacity, 60 as squares
+            union
+            select '12.5米' as car_type, 17 as capacity, 80 as squares
+            union
+            select '13.7米' as car_type, 19 as capacity, 87 as squares
+            union
+            select '17.5米' as car_type, 28 as capacity, 125 as squares
+        </sql.value>
+        <sql.enable>true</sql.enable>
+        <sql.description>运力-车载体积与车型对应临时表</sql.description>
+    </property>
+
+
+    <property>
+        <sql.name>ane_lw_type</sql.name>
+        <sql.value>
+            select code_gid, category
+            from
+            edw_cdm.dim_tms_ane_lw_type
+        </sql.value>
+        <sql.enable>true</sql.enable>
+        <sql.description>与运输主表关联补充加班类型、加班原因</sql.description>
+    </property>
+
+
+    <property>
+        <sql.name>equipment_group</sql.name>
+        <sql.value>
+            select
+            equipment_group_gid,
+            equipment_group_name
+            from
+            edw_cdm.dim_tms_equipment_group
+        </sql.value>
+        <sql.enable>true</sql.enable>
+        <sql.description>与运输主表关联补充车型</sql.description>
+    </property>
+
+
+    <property>
+        <sql.name>shipment_stop</sql.name>
+        <sql.value>
+            select
+            s.shipment_gid,
+            s.stop_num,
+            s.location_gid,
+            replace(replace(replace(replace(l.location_name, '分拨中心', ''), '集散中心', ''),'集散站',''),'集配站','') as
+            location_name,
+            s.planned_departure,
+            s.actual_departure
+            from
+            shipment_stop_tmp s left join location l
+            on
+            l.location_gid = s.location_gid
+        </sql.value>
+        <sql.enable>true</sql.enable>
+        <sql.description></sql.description>
+    </property>
+
+    <property>
+        <sql.name>hs_ewbs_list_no_tmp</sql.name>
+        <sql.value>
+            select
+            task_no,
+            ewbs_list_no,
+            created_time,
+            cast(site_id as string) site_id,
+            cast(next_site_id as string) next_site_id
+            from
+            edw_cdm.dwd_fact_lb_hs_ewbs_list_no
+            where
+            rd_status = 1
+            and
+            end_time = '9999-12-31'
+        </sql.value>
+        <sql.enable>true</sql.enable>
+        <sql.description>交接单表，与运输主表关联后提供与运单表关联运单号</sql.description>
+    </property>
+
+    <property>
+        <sql.name>hs_ewbs_list_detail</sql.name>
+        <sql.value>
+            select
+            ewbs_list_no,
+            ewb_no,
+            out_piece
+            from
+            edw_cdm.dwd_fact_lb_hs_ewbs_list_detail
+            where
+            end_time = '9999-12-31'
+            and
+            out_piece > 0
+        </sql.value>
+        <sql.enable>true</sql.enable>
+        <sql.description>交接单明细表，提供分路段件数度量</sql.description>
+    </property>
+
+    <property>
+        <sql.name>lb_hs_basic_site</sql.name>
+        <sql.value>
+            select
+            cast(site_id as string) site_id,
+            site_code,
+            site_name
+            from
+            edw_cdm.dim_hs_basic_site
+            where
+            end_time = '9999-12-31'
+        </sql.value>
+        <sql.enable>true</sql.enable>
+        <sql.description>与交接单表关联补充交接单表网点名与下一站网点名</sql.description>
+    </property>
+
+    <property>
+        <sql.name>dm_pb_bizop_org_brnch</sql.name>
+        <sql.value>
+            select
+            svth_lvl_org_brnch_id,
+            fith_lvl_org_brnch_nm,
+            thrd_lvl_org_brnch_nm,
+            org_brnch_lvl
+            from
+            edw_cdm.dim_dm_pb_bizop_org_brnch
+        </sql.value>
+        <sql.enable>true</sql.enable>
+        <sql.description>组织层级表，补充分拨，省区</sql.description>
+    </property>
+
+    <property>
+        <sql.name>hs_ewbs_list_no_tmp2</sql.name>
+        <sql.value>
+            select
+            h.task_no,
+            h.ewbs_list_no,
+            h.created_time,
+            h.site_id as first_site_id,
+            s.site_code as first_site_code,
+            replace(replace(replace(replace(s.site_name, '分拨中心', ''), '集散中心', ''),'集散站',''),'集配站','') as
+            first_site_name,
+            d.fith_lvl_org_brnch_nm as first_distribute_nm,
+            d.thrd_lvl_org_brnch_nm as first_prov_nm,
+            h.next_site_id,
+            s_1.site_code as next_site_code,
+            replace(replace(replace(replace(s_1.site_name, '分拨中心', ''), '集散中心', ''),'集散站',''),'集配站','') as
+            next_site_name,
+            d_1.fith_lvl_org_brnch_nm as next_distribute_nm,
+            d_1.thrd_lvl_org_brnch_nm as next_prov_nm
+            from
+            hs_ewbs_list_no_tmp h left join lb_hs_basic_site s
+            on
+            s.site_id = h.site_id
+            left join lb_hs_basic_site s_1 on
+            s_1.site_id = h.next_site_id
+            left join dm_pb_bizop_org_brnch d on
+            d.svth_lvl_org_brnch_id = h.site_id
+            and
+            d.org_brnch_lvl in (5,7)
+            left join dm_pb_bizop_org_brnch d_1 on
+            d_1.svth_lvl_org_brnch_id = h.next_site_id
+            and
+            d_1.org_brnch_lvl in (5,7)
+            where
+            h.ewbs_list_no in (select ewbs_list_no from hs_ewbs_list_detail group by ewbs_list_no)
+        </sql.value>
+        <sql.enable>true</sql.enable>
+        <sql.description>补充交接单表网点名与下一站网点名，code，省区，分拨</sql.description>
+    </property>
+
+    <property>
+        <sql.name>hs_ewbs_list_no</sql.name>
+        <sql.value>
+            select
+            row_number() over(partition by task_no,first_site_id,next_site_id order by created_time asc) as rn,
+            task_no,
+            ewbs_list_no,
+            created_time,
+            first_site_id,
+            first_site_code,
+            first_site_name,
+            first_distribute_nm,
+            first_prov_nm,
+            next_site_id,
+            next_site_code,
+            next_site_name,
+            next_distribute_nm,
+            next_prov_nm
+            from
+            hs_ewbs_list_no_tmp2
+        </sql.value>
+        <sql.enable>true</sql.enable>
+        <sql.description></sql.description>
+    </property>
+
+    <property>
+        <sql.name>lb_dict</sql.name>
+        <sql.value>
+            select
+            dict_id,
+            dict_name
+            from
+            edw_cdm.dim_hs_basic_dict
+            where
+            end_time = '9999-12-31'
+            and
+            type_code = 'services_type'
+        </sql.value>
+        <sql.enable>true</sql.enable>
+        <sql.description>补充运单产品类型名称</sql.description>
+    </property>
+
+    <property>
+        <sql.name>hs_opt_ewb_tmp</sql.name>
+        <sql.value>
+            select
+            ewb_no,
+            calc_weight,
+            operate_weight,
+            vol,
+            piece
+            from
+            edw_cdm.dwd_fact_hs_opt_ewb
+            where
+            end_time = '9999-12-31'
+            and
+            rd_status = 1
+        </sql.value>
+        <sql.enable>true</sql.enable>
+        <sql.description>补充运单结算重量、运营重量度量</sql.description>
+    </property>
+
+    <property>
+        <sql.name>hs_opt_ewb_detail</sql.name>
+        <sql.value>
+            select
+            ewb_no,
+            services_type_id
+            from
+            edw_cdm.dwd_fact_hs_opt_ewb_detail
+            where
+            end_time = '9999-12-31'
+        </sql.value>
+        <sql.enable>true</sql.enable>
+        <sql.description>补充产品类型id</sql.description>
+    </property>
+
+    <property>
+        <sql.name>hs_opt_ewb</sql.name>
+        <sql.value>
+            select
+            t.ewb_no,
+            t.calc_weight,
+            t.operate_weight,
+            t.vol,
+            t.piece,
+            c.dict_name as product_name
+            from
+            hs_opt_ewb_tmp t left join hs_opt_ewb_detail d
+            on
+            d.ewb_no = t.ewb_no
+            left join lb_dict c on
+            c.dict_id = d.services_type_id
+        </sql.value>
+        <sql.enable>true</sql.enable>
+        <sql.description>运单表提供运单号，统计得票数，结算重量，运营重量，体积度量</sql.description>
+    </property>
+
+    <property>
+        <sql.name>shipment</sql.name>
+        <sql.value>
+            select
+            cast('2022-01-23 12:00:00' as string) as stat_date,
+            shipment_gid,
+            attribute1 as order_id,
+            attribute4 as shipment_schedule_id,
+            attribute7 as car_id,
+            attribute_number10 as actual_cost,
+            attribute2 as order_type,
+            attribute19 as line_type,
+            attribute14 as please_car_nature,
+            attribute15 as load_mode,
+            e.equipment_group_name as car_type,
+            case when s.attribute13 = '计划取消' then 0
+            else c.capacity
+            end as rated_capacity_total,
+            case when s.attribute13 = '计划取消' then 0
+            else c.squares
+            end as rated_vol_total,
+            attribute13 as transport_status,
+            a.category as overtime_reason,
+            a_1.category as overtime_son_reason,
+            attribute_date1 as plan_start_time,
+            schedule_note as planned_schedule,
+            attribute5 as actual_schedule
+            <!--                ,income_gambling_segmented_split(attribute15,attribute5) as trans_rodes_total-->
+            from
+            edw_cdm.dwd_fact_tms_shipment s
+            left join equipment_group e on
+            e.equipment_group_gid = s.attribute8
+            left join car_tmp c on
+            c.car_type = e.equipment_group_name
+            left join ane_lw_type a on
+            a.code_gid = s.attribute29
+            left join ane_lw_type a_1 on
+            a_1.code_gid = s.reason_overtime
+            where
+            s.end_point = '9999-12-31'
+            and
+            s.attribute_date1 >= '2022-01-23 12:00:00'
+            and
+            s.attribute_date1 &lt; '2022-01-23 12:00:00'
+            and
+            substr(s.shipment_gid,1,6) = 'PD/ANE'
+            and
+            attribute13 in ('已调度','计划取消','在途','运输完成','运输完成（手工）','运输完成（补录）')
+        </sql.value>
+        <sql.enable>true</sql.enable>
+        <sql.description>运输主表</sql.description>
+    </property>
+
+    <property>
+        <sql.name>shipment_by_roads_tmp</sql.name>
+        <sql.value>
+            select
+            stat_date,
+            shipment_gid,
+            order_id,
+            shipment_schedule_id,
+            car_id,
+            actual_cost,
+            order_type,
+            line_type,
+            please_car_nature,
+            load_mode,
+            car_type,
+            rated_capacity_total,
+            rated_vol_total,
+            transport_status,
+            overtime_reason,
+            overtime_son_reason,
+            plan_start_time,
+            planned_schedule,
+            actual_schedule,
+            trans_rodes_total,
+            trans_rodes_total_1
+            from
+            shipment
+            lateral view explode(trans_rodes_total) a as trans_rodes_total_1
+            where trans_rodes_total is not null
+        </sql.value>
+        <sql.enable>true</sql.enable>
+        <sql.description>运输主表分路段（行转列）</sql.description>
+    </property>
+
+    <property>
+        <sql.name>shipment_by_roads_tmp2</sql.name>
+        <sql.value>
+            select
+            stat_date,
+            shipment_gid,
+            order_id,
+            shipment_schedule_id,
+            car_id,
+            actual_cost,
+            order_type,
+            line_type,
+            please_car_nature,
+            load_mode,
+            car_type,
+            rated_capacity_total,
+            rated_vol_total,
+            transport_status,
+            overtime_reason,
+            overtime_son_reason,
+            plan_start_time,
+            planned_schedule,
+            actual_schedule,
+            split(trans_rodes_total_1,'\\\\*')[0] as trans_mode,
+            split(trans_rodes_total_1,'\\\\*')[1] as trans_rodes,
+            split(trans_rodes_total_1,'\\\\*')[2] as by_road_method,
+            split(trans_rodes_total_1,'\\\\*')[3] as by_road_num
+            from
+            shipment_by_roads_tmp
+        </sql.value>
+        <sql.enable>true</sql.enable>
+        <sql.description>运输主表分路段（行转列）拆分出分段及分段规则及分路段排序</sql.description>
+    </property>
+
+    <property>
+        <sql.name>shipment_by_roads_tmp3</sql.name>
+        <sql.value>
+            select
+            stat_date,
+            shipment_gid,
+            order_id,
+            shipment_schedule_id,
+            car_id,
+            actual_cost,
+            order_type,
+            line_type,
+            please_car_nature,
+            load_mode,
+            car_type,
+            rated_capacity_total,
+            rated_vol_total,
+            transport_status,
+            overtime_reason,
+            overtime_son_reason,
+            plan_start_time,
+            planned_schedule,
+            actual_schedule,
+            trans_mode,
+            trans_rodes,
+            by_road_method,
+            by_road_num,
+            rated_capacity_total*by_road_method as road_rated_capacity,
+            rated_vol_total*by_road_method as road_rated_vol,
+            replace(replace(replace(replace(split(trans_rodes,'\\\\-')[0], '分拨中心', ''), '集散中心', ''),'集散站',''),'集配站','')
+            as first_rodes,
+            replace(replace(replace(replace(split(trans_rodes,'\\\\-')[1], '分拨中心', ''), '集散中心', ''),'集散站',''),'集配站','')
+            as next_rodes
+            from
+            shipment_by_roads_tmp2
+        </sql.value>
+        <sql.enable>true</sql.enable>
+        <sql.description>运输主表分路段（行转列）拆分出分段及分段规则及分路段排序，发件地及到件地，计算分路段运力及车载体积</sql.description>
+    </property>
+
+    <property>
+        <sql.name>shipment_by_roads_tmp4_1</sql.name>
+        <sql.value>
+            select
+            a.stat_date,
+            a.shipment_gid,
+            a.order_id,
+            a.shipment_schedule_id,
+            a.car_id,
+            a.actual_cost,
+            a.order_type,
+            a.line_type,
+            a.please_car_nature,
+            a.load_mode,
+            a.car_type,
+            a.rated_capacity_total,
+            a.rated_vol_total,
+            a.transport_status,
+            a.overtime_reason,
+            a.overtime_son_reason,
+            a.plan_start_time,
+            a.planned_schedule,
+            a.actual_schedule,
+            a.trans_mode,
+            a.trans_rodes,
+            a.by_road_method,
+            a.by_road_num,
+            a.road_rated_capacity,
+            a.road_rated_vol,
+            a.first_rodes,
+            a.next_rodes,
+            b.planned_departure as road_planned_schedule,
+            b.actual_departure as road_actual_schedule
+            from
+            shipment_by_roads_tmp3 a left join shipment_stop b
+            on
+            b.shipment_gid = a.shipment_gid
+            and
+            b.stop_num = a.by_road_num
+            and
+            b.location_name = a.first_rodes
+        </sql.value>
+        <sql.enable>true</sql.enable>
+        <sql.description>运输主表分路段（行转列）拆分出分段及分段规则及分路段排序，发件地及到件地，计算分路段运力及车载体积，补充分路段计划发车时间，实际发车时间</sql.description>
+    </property>
+
+    <property>
+        <sql.name>shipment_by_roads_tmp4</sql.name>
+        <sql.value>
+            select
+            t_1.stat_date,
+            t_1.shipment_gid,
+            t_1.order_id,
+            t_1.shipment_schedule_id,
+            t_1.car_id,
+            t_1.actual_cost,
+            t_1.order_type,
+            t_1.line_type,
+            t_1.please_car_nature,
+            t_1.load_mode,
+            t_1.car_type,
+            t_1.rated_capacity_total,
+            t_1.rated_vol_total,
+            t_1.transport_status,
+            t_1.overtime_reason,
+            t_1.overtime_son_reason,
+            t_1.plan_start_time,
+            t_1.planned_schedule,
+            t_1.actual_schedule,
+            t_1.trans_rodes,
+            t_1.by_road_method,
+            t_1.by_road_num,
+            t_1.road_rated_capacity,
+            t_1.road_rated_vol,
+            t_1.road_planned_schedule,
+            t_1.road_actual_schedule,
+            t_1.first_rodes,
+            l.first_distribute_nm,
+            l.first_prov_nm,
+            t_1.next_rodes,
+            l.next_distribute_nm,
+            l.next_prov_nm
+            from
+            shipment_by_roads_tmp4_1 t_1 left join hs_ewbs_list_no l
+            on
+            l.task_no = t_1.order_id
+            and
+            l.rn = 1
+            and
+            l.first_site_name = t_1.first_rodes
+            and
+            l.next_site_name = t_1.next_rodes
+            where
+            t_1.trans_mode != 'A-B-A-B'
+        </sql.value>
+        <sql.enable>true</sql.enable>
+        <sql.description></sql.description>
+    </property>
+
+    <property>
+        <sql.name>result_by_road</sql.name>
+        <sql.value>
+            select
+            t_4.order_id,
+            t_4.by_road_num,
+            t_4.trans_rodes,
+            sum(coalesce(d.out_piece, 0)) as road_out_piece_num,
+            sum(case when d.ewb_no is null then 0 else 1 end) as ewb_num,
+            sum(coalesce(o.calc_weight, 0)/coalesce(o.piece, 0)*coalesce(d.out_piece, 0)) as road_calc_weight,
+            sum(coalesce(o.operate_weight, 0)/coalesce(o.piece, 0)*coalesce(d.out_piece, 0)) as road_operate_weight,
+            sum(coalesce(o.vol, 0)/coalesce(o.piece, 0)*coalesce(d.out_piece, 0)) as road_vol
+            from
+            shipment_by_roads_tmp4 t_4 inner join hs_ewbs_list_no l
+            on
+            l.task_no = t_4.order_id
+            and
+            l.first_site_name = t_4.first_rodes
+            and
+            l.next_site_name = t_4.next_rodes
+            inner join hs_ewbs_list_detail d
+            on
+            d.ewbs_list_no = l.ewbs_list_no
+            left join hs_opt_ewb o
+            on
+            o.ewb_no = d.ewb_no
+            group by
+            t_4.trans_rodes,
+            t_4.order_id,
+            t_4.by_road_num
+        </sql.value>
+        <sql.enable>true</sql.enable>
+        <sql.description>统计分路段票数，件数，结算重量，运营重量，货物体积</sql.description>
+    </property>
+
+    <property>
+        <sql.name>product_by_road_1</sql.name>
+        <sql.value>
+            select
+            t_4.order_id,
+            t_4.by_road_num,
+            t_4.trans_rodes,
+            sum(coalesce(o.calc_weight, 0)/coalesce(o.piece, 0)*coalesce(d.out_piece, 0)) as mini_big_clac_weight
+            from
+            shipment_by_roads_tmp4 t_4 inner join hs_ewbs_list_no l
+            on
+            l.task_no = t_4.order_id
+            and
+            l.first_site_name = t_4.first_rodes
+            and
+            l.next_site_name = t_4.next_rodes
+            inner join hs_ewbs_list_detail d
+            on
+            d.ewbs_list_no = l.ewbs_list_no
+            left join hs_opt_ewb o
+            on
+            o.ewb_no = d.ewb_no
+            and
+            o.product_name = 'MiNi电商大件'
+            group by
+            t_4.trans_rodes,
+            t_4.order_id,
+            t_4.by_road_num
+        </sql.value>
+        <sql.enable>true</sql.enable>
+        <sql.description>统计分路段MiNi电商大件结算重量</sql.description>
+    </property>
+
+    <property>
+        <sql.name>product_by_road_2</sql.name>
+        <sql.value>
+            select
+            t_4.order_id,
+            t_4.by_road_num,
+            t_4.trans_rodes,
+            sum(coalesce(o.calc_weight, 0)/coalesce(o.piece, 0)*coalesce(d.out_piece, 0)) as mini_small_clac_weight
+            from
+            shipment_by_roads_tmp4 t_4 inner join hs_ewbs_list_no l
+            on
+            l.task_no = t_4.order_id
+            and
+            l.first_site_name = t_4.first_rodes
+            and
+            l.next_site_name = t_4.next_rodes
+            inner join hs_ewbs_list_detail d
+            on
+            d.ewbs_list_no = l.ewbs_list_no
+            left join hs_opt_ewb o
+            on
+            o.ewb_no = d.ewb_no
+            and
+            o.product_name = 'MiNi电商小件'
+            group by
+            t_4.trans_rodes,
+            t_4.order_id,
+            t_4.by_road_num
+        </sql.value>
+        <sql.enable>true</sql.enable>
+        <sql.description>统计分路段MiNi电商小件结算重量</sql.description>
+    </property>
+
+    <property>
+        <sql.name></sql.name>
+        <sql.value></sql.value>
+        <sql.enable>true</sql.enable>
+        <sql.description></sql.description>
+    </property>
+
+    <property>
+        <sql.name></sql.name>
+        <sql.value></sql.value>
+        <sql.enable>true</sql.enable>
+        <sql.description></sql.description>
+    </property>
+
+    <property>
+        <sql.name></sql.name>
+        <sql.value></sql.value>
+        <sql.enable>true</sql.enable>
+        <sql.description></sql.description>
+    </property>
+
+    <property>
+        <sql.name></sql.name>
+        <sql.value></sql.value>
+        <sql.enable>true</sql.enable>
+        <sql.description></sql.description>
+    </property>
+
+    <property>
+        <sql.name></sql.name>
+        <sql.value></sql.value>
+        <sql.enable>true</sql.enable>
+        <sql.description></sql.description>
+    </property>
+
+    <property>
+        <sql.name></sql.name>
+        <sql.value></sql.value>
+        <sql.enable>true</sql.enable>
+        <sql.description></sql.description>
+    </property>
+
+    <property>
+        <sql.name></sql.name>
+        <sql.value></sql.value>
+        <sql.enable>true</sql.enable>
+        <sql.description></sql.description>
+    </property>
+
+    <property>
+        <sql.name></sql.name>
+        <sql.value></sql.value>
+        <sql.enable>true</sql.enable>
+        <sql.description></sql.description>
+    </property>
+
+    <property>
+        <sql.name></sql.name>
+        <sql.value></sql.value>
+        <sql.enable>true</sql.enable>
+        <sql.description></sql.description>
+    </property>
+
+    <property>
+        <sql.name></sql.name>
+        <sql.value></sql.value>
+        <sql.enable>true</sql.enable>
+        <sql.description></sql.description>
+    </property>
+
+    <property>
+        <sql.name></sql.name>
+        <sql.value></sql.value>
+        <sql.enable>true</sql.enable>
+        <sql.description></sql.description>
+    </property>
+
+    <property>
+        <sql.name></sql.name>
+        <sql.value></sql.value>
+        <sql.enable>true</sql.enable>
+        <sql.description></sql.description>
+    </property>
+
+    <property>
+        <sql.name></sql.name>
+        <sql.value></sql.value>
+        <sql.enable>true</sql.enable>
+        <sql.description></sql.description>
+    </property>
+
+
+</configuration>

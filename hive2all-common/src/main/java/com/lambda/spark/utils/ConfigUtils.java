@@ -72,4 +72,5 @@ public class ConfigUtils {
         String compressionFormat = configuration.get("compression.format");
         return compressionFormat;
     }
+
 }

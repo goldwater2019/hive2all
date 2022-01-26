@@ -10,8 +10,6 @@ import java.io.File;
 import java.io.FileFilter;
 import java.util.*;
 
-import static com.lambda.spark.utils.ConfigUtils.getTableLists;
-
 /**
  * @Author: zhangxinsen
  * @Date: 2022/1/20 10:35 PM
@@ -210,19 +208,102 @@ public class XMLUtils {
         return result;
     }
 
+    /**
+     * 通过SQL的别名获得SQL的内容
+     *
+     * @param configuration
+     * @param sqlName
+     * @return
+     */
+    private static String getSql(Map<String, String> configuration, String sqlName) {
+        String sql = configuration.get(sqlName);
+        return sql;
+    }
+
+    /**
+     * 通过SQL的开关来确定SQL是否正常使用
+     * 每一个页签包涵4个属性
+     * sql.name: sql别名
+     * sql.value: sql表达式
+     * sql.enable: 是否启用
+     * sql.description: SQL的注释
+     * @return : List<Map<String, String>>
+     *     Map: {
+     *         "name": "临时SQL",
+     *         "value": " select * from temp",
+     *         "isSqlEnable": false,
+     *         "description": "测试"
+     *     }
+     */
+    private static List<Map<String, String>> getSqlConfig(String sqlFileName) {
+        List<Map<String, String>> result = new LinkedList<>();
+        SAXReader reader = new SAXReader();
+        try {
+            // 通过reader对象的read方法加载books.xml文件,获取document对象。
+            Document document = reader.read(new File(sqlFileName));
+            // 通过document对象获取根节点bookstore
+            Element configurationRoot = document.getRootElement();
+            // 通过element对象的elementIterator方法获取迭代器
+            Iterator it = configurationRoot.elementIterator();
+            // 遍历迭代器，获取根节点中的信息
+            while (it.hasNext()) {
+                Element property = (Element) it.next();
+
+                Iterator<Element> itt = property.elementIterator();
+                Map<String, String> temp = new HashMap<>();
+                while (itt.hasNext()) {
+                    Element child = (Element) itt.next();
+                    if (child.getName().equals("sql.name")) {
+                        temp.put("name", child.getStringValue());
+                    }
+                    if (child.getName().equals("sql.value")) {
+                        temp.put("value", child.getStringValue());
+                    }
+                    if (child.getName().equals("sql.enable")) {
+                        temp.put("isSqlEnable", child.getStringValue());
+                    }
+                    if (child.getName().equals("sql.description")) {
+                        temp.put("description", child.getStringValue());
+                    }
+                }
+                if (temp.get("name") != null && temp.get("value") != null) {
+                    Map<String, String> copySQL = new HashMap<>();
+                    copySQL.put("name", temp.get("name"));
+                    copySQL.put("value", temp.get("value"));
+                    if (temp.get("isSqlEnable") != null && temp.get("isSqlEnable").equals("false")) {
+                        copySQL.put("isSqlEnable", "false");
+                    } else {
+                        copySQL.put("isSqlEnable", "true");
+                    }
+                    copySQL.put("description", temp.get("description"));
+                    result.add(copySQL);
+                }
+            }
+        } catch (DocumentException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    public static List<Map<String, String>> getSqlConfigInDir(String dirname) {
+        Map<String, String> configuration = getConfigurationInDir(dirname);
+        String sqlFilePath = configuration.get("sql.file");
+        if (sqlFilePath == null) {
+            return null;
+        }
+        return getSqlConfig(sqlFilePath);
+    }
+
 //    public static void main(String[] args) {
-//        String taskConfigDir = "/Users/zhangxinsen/workspace/hive2all/config/";
-//        Map<String, String> configuration = getConfigurationInDir(taskConfigDir);
-//        List<String> tableLists = getTableLists(configuration);
-//        for (String tableName : tableLists) {
-//            System.out.println("======= " + tableName + " =========");
-//            Map<String, List<String>> filterConditions = getFilterConditionsInDir(taskConfigDir, configuration, tableName);
-//            for (Map.Entry<String, List<String>> stringListEntry : filterConditions.entrySet()) {
-//                System.out.println(stringListEntry.getKey());
-//                for (String condition : stringListEntry.getValue()) {
-//                    System.out.println(condition);
-//                }
-//            }
+//        List<Map<String, String>> sqlConfigInDir = getSqlConfigInDir("/Users/zhangxinsen/workspace/hive2all/config");
+//        for (Map<String, String> stringStringMap : sqlConfigInDir) {
+//            String sqlName = stringStringMap.get("name");
+//            String sqlValue = stringStringMap.get("value");
+//            boolean isSqlEnable = stringStringMap.get("isSqlEnable").equals("true");
+//            System.out.println(
+//                    "sql name: " + sqlName + ", value: " + sqlValue + ", isEnable: " + (isSqlEnable ? "true" : "false")
+//            );
 //        }
 //    }
 }

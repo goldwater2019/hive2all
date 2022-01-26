@@ -19,6 +19,7 @@
         <module>hive2file</module>
         <module>file2hive</module>
         <module>file2cos</module>
+        <module>ssql-client</module>
     </modules>
 
     <properties>

@@ -198,5 +198,6 @@
     <orderEntry type="library" name="Maven: stax:stax-api:1.0.1" level="project" />
     <orderEntry type="library" name="Maven: jline:jline:2.12" level="project" />
     <orderEntry type="module" module-name="hive2all-common" />
+    <orderEntry type="library" name="Maven: com.beust:jcommander:1.81" level="project" />
   </component>
 </module>
